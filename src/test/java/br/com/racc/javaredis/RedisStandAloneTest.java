@@ -16,39 +16,39 @@ public class RedisStandAloneTest {
 	private static final String VALUE_2 = "Value 2";
 	private static final String PING_RESPONSE = "PONG";
 
-	private RedisStandAlone standAlone;
+	private RedisStandAlone redis;
 
 	@Before
 	public void connect() {
-		standAlone = new RedisStandAlone(REDIS_HOST, REDIS_PORT);
+		redis = new RedisStandAlone(REDIS_HOST, REDIS_PORT);
 	}
 
 	@Test(timeout = 5)
 	public void testIsConnected() {
-		assertTrue(standAlone.isConnected());
+		assertTrue(redis.isConnected());
 	}
 
 	@Test(timeout = 20)
 	public void testPing() {
-		assertEquals(PING_RESPONSE, standAlone.ping());
+		assertEquals(PING_RESPONSE, redis.ping());
 	}
 
 	@Test(timeout = 5)
 	public void testGetSet() {
-		standAlone.set(KEY_1, VALUE_1);
-		standAlone.set(KEY_2, VALUE_2);
+		redis.set(KEY_1, VALUE_1);
+		redis.set(KEY_2, VALUE_2);
 
-		assertEquals(VALUE_1, standAlone.get(KEY_1));
-		assertEquals(VALUE_2, standAlone.get(KEY_2));
+		assertEquals(VALUE_1, redis.get(KEY_1));
+		assertEquals(VALUE_2, redis.get(KEY_2));
 	}
 
 	@Test(timeout = 10)
 	public void testGetInfo() {
-		System.out.println(standAlone.getInfo());
+		System.out.println(redis.getInfo());
 	}
 
 	@Test(timeout = 5)
 	public void testGetServerInfo() {
-		System.out.println(standAlone.getServerInfo());
+		System.out.println(redis.getServerInfo());
 	}
 }

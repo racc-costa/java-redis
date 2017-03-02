@@ -13,7 +13,14 @@ public class RedisSentinel extends Redis {
 		GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 		pool = new JedisSentinelPool(masterName, sentinels, config, 5000);
 		setJedis(pool.getResource());
-		//getJedis().connect();
+	}
+
+	public void renewMaster() {
+		try {
+			setJedis(pool.getResource());
+		} catch (Throwable e) {
+
+		}
 	}
 
 	public void disconnect() {

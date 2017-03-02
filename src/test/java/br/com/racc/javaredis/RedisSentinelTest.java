@@ -12,16 +12,16 @@ import org.junit.Test;
 
 public class RedisSentinelTest {
 	private static final String SENTINEL_HOST = "localhost";
-	private static final int SENTINEL1_PORT = 26379;
-	private static final int SENTINEL2_PORT = 26380;
-	private static final int SENTINEL3_PORT = 26381;
+	private static final int SENTINEL1_PORT = 6390;
+	private static final int SENTINEL2_PORT = 6391;
+	private static final int SENTINEL3_PORT = 6392;
 	private static final String KEY_1 = "1";
 	private static final String KEY_2 = "2";
 	private static final String VALUE_1 = "Value 1";
 	private static final String VALUE_2 = "Value 2";
 	private static final String PING_RESPONSE = "PONG";
-	
-	private RedisSentinel sentinel;
+
+	private RedisSentinel redis;
 
 	@Before
 	public void connect() {
@@ -29,41 +29,55 @@ public class RedisSentinelTest {
 		sentinels.add(SENTINEL_HOST + ":" + SENTINEL1_PORT);
 		sentinels.add(SENTINEL_HOST + ":" + SENTINEL2_PORT);
 		sentinels.add(SENTINEL_HOST + ":" + SENTINEL3_PORT);
-		sentinel = new RedisSentinel("redis", sentinels, 5000);
-	}
-	
-	@After
-	public void disconnect() {
-		sentinel.disconnect();
+		redis = new RedisSentinel("redis", sentinels, 5000);
 	}
 
+	@After
+	public void disconnect() {
+		redis.disconnect();
+	}
 
 	@Test(timeout = 5)
 	public void testIsConnected() {
-		assertTrue(sentinel.isConnected());
+		assertTrue(redis.isConnected());
 	}
 
 	@Test(timeout = 20)
 	public void testPing() {
-		assertEquals(PING_RESPONSE, sentinel.ping());
+		assertEquals(PING_RESPONSE, redis.ping());
 	}
 
 	@Test(timeout = 5)
 	public void testGetSet() {
-		sentinel.set(KEY_1, VALUE_1);
-		sentinel.set(KEY_2, VALUE_2);
+		redis.set(KEY_1, VALUE_1);
+		redis.set(KEY_2, VALUE_2);
 
-		assertEquals(VALUE_1, sentinel.get(KEY_1));
-		assertEquals(VALUE_2, sentinel.get(KEY_2));
+		assertEquals(VALUE_1, redis.get(KEY_1));
+		assertEquals(VALUE_2, redis.get(KEY_2));
 	}
 
 	@Test(timeout = 10)
 	public void testGetInfo() {
-		System.out.println(sentinel.getInfo());
+		System.out.println(redis.getInfo());
 	}
 
 	@Test(timeout = 5)
 	public void testGetServerInfo() {
-		System.out.println(sentinel.getServerInfo());
+		System.out.println(redis.getServerInfo());
+	}
+
+	@Test
+	public void testFailOver() throws InterruptedException {
+		for (int i = 0; i <= 600; i++) {
+			Thread.sleep(1000);
+			try {
+				redis.set("key" + i, "value" + i);
+				String value = redis.get("key" + i);
+				System.out.println("Key in redis: " + value);
+			} catch (Throwable e) {
+				redis.renewMaster();
+				System.err.println("Key not in redis: " + i);
+			}
+		}
 	}
 }
